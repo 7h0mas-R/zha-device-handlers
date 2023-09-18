@@ -55,23 +55,24 @@ class SchneiderWindowCovering(CustomCluster, WindowCovering):
         )
 
 
-class SchneiderElectricCustomCluster(CustomCluster):
+class SchneiderSettingsCluster(CustomCluster):
     """Schneider Electric Settings Cluster (0xFF17)."""
 
     name = "Schneider Electric Settings Cluster."
+    ep_attribute = "SchneiderSettingsCluster"
     cluster_id = 0xFF17
 
     attributes = CustomCluster.attributes.copy()
     attributes.update(
         {
             # Alarm settings
-            0x0000: ("led_settings", t.enum8, 0),
-            0x0001: ("button_mode", t.enum8, 3),
-            0x0010: ("unknown1", t.uint8_t, 0),
-            0x0011: ("unknown2", t.uint16_t, 0),
-            0x0020: ("unknown3", t.uint8_t, 1),
-            0x0021: ("unknown4", t.uint16_t, 0),
-            0xFFFD: ("unknown5", t.uint16_t, 1),
+            0x0000: ("led_settings", t.enum8, True),
+            0x0001: ("button_mode", t.enum8, True),
+            0x0010: ("unknown1", t.uint8_t, True),
+            0x0011: ("unknown2", t.uint16_t, True),
+            0x0020: ("unknown3", t.uint8_t, True),
+            0x0021: ("unknown4", t.uint16_t, True),
+            0xFFFD: ("unknown5", t.uint16_t, True),
         }
     )
 
@@ -130,7 +131,12 @@ class WiserShutterInsertMEG5165(CustomDevice):
         },
     }
     replacement = {
+        # SKIP_CONFIGURATION: True,
         ENDPOINTS: {
+            # <SimpleDescriptor endpoint=5 profile=260 device_type=514
+            # device_version=0
+            # input_clusters=[0, 3, 4, 5, 258, 2821]
+            # output_clusters=[25]>
             5: {
                 PROFILE_ID: zha.PROFILE_ID,
                 DEVICE_TYPE: zha.DeviceType.WINDOW_COVERING_DEVICE,
@@ -146,6 +152,10 @@ class WiserShutterInsertMEG5165(CustomDevice):
                     Ota.cluster_id,  # 0x0019
                 ],
             },
+            # <SimpleDescriptor endpoint=21 profile=260 device_type=260
+            # device_version=0
+            # input_clusters=[0, 3, 2821, 65303]
+            # output_clusters=[3, 5, 6, 8, 25, 258]>
             21: {
                 PROFILE_ID: zha.PROFILE_ID,
                 DEVICE_TYPE: zha.DeviceType.DIMMER_SWITCH,
@@ -153,15 +163,15 @@ class WiserShutterInsertMEG5165(CustomDevice):
                     Basic.cluster_id,  # 0x0000
                     Identify.cluster_id,  # 0x0003
                     Diagnostic.cluster_id,  # 0x0b05
-                    SchneiderElectricCustomCluster,  # Schneider specific settings
+                    SchneiderSettingsCluster,  # Schneider specific settings
                 ],
                 OUTPUT_CLUSTERS: [
-                    Identify.cluster_id,  # 0x0003
-                    Scenes.cluster_id,  # 0x0005
-                    OnOff.cluster_id,  # 0x0006
-                    LevelControl.cluster_id,  # 0x0008
-                    Ota.cluster_id,  # 0x0019
-                    WindowCovering.cluster_id,  # 0x0102
+                    Identify.cluster_id,
+                    Scenes.cluster_id,
+                    OnOff.cluster_id,
+                    LevelControl.cluster_id,
+                    Ota.cluster_id,
+                    WindowCovering.cluster_id,
                 ],
             },
         },
