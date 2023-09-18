@@ -76,6 +76,11 @@ class SchneiderSettingsCluster(CustomCluster):
         }
     )
 
+    def _update_attribute(self, attrid, value):
+        if attrid == 0x0000:
+            value = value
+        super()._update_attribute(attrid, value)
+
 
 class WiserShutterInsertMEG5165(CustomDevice):
     """1GANG/SHUTTER/1"""
@@ -163,7 +168,7 @@ class WiserShutterInsertMEG5165(CustomDevice):
                     Basic.cluster_id,  # 0x0000
                     Identify.cluster_id,  # 0x0003
                     Diagnostic.cluster_id,  # 0x0b05
-                    SchneiderSettingsCluster,  # Schneider specific settings
+                    SchneiderSettingsCluster,  # Schneider specific settings oxFF17
                 ],
                 OUTPUT_CLUSTERS: [
                     Identify.cluster_id,

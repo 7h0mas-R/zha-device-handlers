@@ -1,4 +1,4 @@
-"""Tests for Smartwings."""
+"""Tests for Schneider Electric Merten Wiser Shutter Insert."""
 from unittest import mock
 
 import pytest
@@ -10,15 +10,15 @@ from tests.common import ClusterListener
 
 
 @pytest.mark.parametrize("quirk", (WiserShutterInsertMEG5165,))
-async def test_WiserShutter_inverted_Position(zigpy_device_from_quirk, quirk):
-    """Test that the Smartwings WM25/L-Z blind quirk inverts the up/down commands."""
+async def test_WiserShutter(zigpy_device_from_quirk, quirk):
+    """Test Wiser Shutter insert."""
 
     device = zigpy_device_from_quirk(quirk)
     device.request = mock.AsyncMock()
 
     covering_cluster = device.endpoints[5].window_covering
     schneider_cluster = device.endpoints[21].SchneiderSettingsCluster
-    ClusterListener(schneider_cluster)
+    schneider_listener = ClusterListener(schneider_cluster)
 
     # dev_led_settings_attr_id = schneider_cluster.attributes_by_name["led_settings"].id
 
@@ -26,6 +26,7 @@ async def test_WiserShutter_inverted_Position(zigpy_device_from_quirk, quirk):
     # assert len(dev_schneider_listener.attribute_updates) == 1
     # assert dev_schneider_listener.attribute_updates[0][0] == dev_led_settings_attr_id
 
+    """Test that the Smartwings WM25/L-Z blind quirk inverts the up/down commands"""
     close_command_id = WindowCovering.commands_by_name["down_close"].id
     open_command_id = WindowCovering.commands_by_name["up_open"].id
     go_to_command_id = WindowCovering.commands_by_name["go_to_lift_percentage"].id
@@ -58,8 +59,11 @@ async def test_WiserShutter_inverted_Position(zigpy_device_from_quirk, quirk):
     # 05: go to lift percentage, x5A=90 percentage
     assert device.request.mock_calls[3][1][5] == b"\x01\x04\x05\x5A"
 
-    # await schneider_cluster.command(go_to_command_id,10)
-    # assert len(device.request.mock_calls) == 4
-    # # (260, 258, 5, 5, 4, b'\x01\x04\x05Z')
-    # # 05: go to lift percentage, x5A=90 percentage
-    # assert device.request.mock_calls[3][1][5] == b"\x01\x04\x05\x5A"
+    """Test some stuff on the Schneider Settings Cluster"""
+    schneider_cluster._update_attribute(0x0000, 0)
+    assert schneider_listener.attribute_updates[0][0] == 0
+    assert schneider_listener.attribute_updates[0][1] == 0
+
+    schneider_cluster._update_attribute(0x0000, 1)
+    assert schneider_listener.attribute_updates[1][0] == 0
+    assert schneider_listener.attribute_updates[1][1] == 1
